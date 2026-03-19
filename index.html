@@ -4,28 +4,412 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TruthFinder Competitor War Room</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #111;
+      color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .sub {
+      color: #bbb;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #1b1b1b;
+      border: 1px solid #2d2d2d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 280px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #0f0f0f;
+      color: white;
+    }
+
+    button {
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #d4af37;
+      color: black;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .error {
+      color: #ff8f8f;
+      margin-top: 12px;
+      white-space: pre-wrap;
+    }
+
+    .muted {
+      color: #aaa;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .metric .label {
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .metric .value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #151515;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .screenshot {
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid #333;
+      margin-top: 8px;
+    }
+
+    .section-title {
+      margin-top: 0;
+    }
+
+    .pill {
+      display: inline-block;
+      background: #2a2412;
+      color: #f2d77c;
+      padding: 6px 10px;
+      border-radius: 999px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+  </style>
 </head>
 <body>
-  <h1>TruthFinder Competitor War Room</h1>
-  <input id="urlInput" placeholder="Enter competitor URL" />
-  <button id="runBtn">Run Analysis</button>
-  <pre id="output"></pre>
-<script>
-async function safeJsonFetch(url, options) {
-  const response = await fetch(url, options);
-  const text = await response.text();
-  if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
-  return JSON.parse(text);
-}
-document.getElementById("runBtn").addEventListener("click", async () => {
-  const url = document.getElementById("urlInput").value;
-  const data = await safeJsonFetch("/analyze", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({url})
-  });
-  document.getElementById("output").textContent = JSON.stringify(data,null,2);
-});
-</script>
+  <div class="container">
+    <h1>TruthFinder Competitor War Room</h1>
+    <div class="sub">Enter a competitor URL and generate a live analysis.</div>
+
+    <div class="card">
+      <div class="row">
+        <input id="urlInput" type="text" placeholder="Enter competitor URL, e.g. beenverified.com" />
+        <button id="runBtn">Run Analysis</button>
+        <button id="exportBtn" disabled>Export Action Plan CSV</button>
+      </div>
+      <div id="status" class="muted" style="margin-top:12px;"></div>
+      <div id="error" class="error"></div>
+    </div>
+
+    <div id="results" class="hidden">
+      <div class="card">
+        <h2 class="section-title">Overview</h2>
+        <div id="overview"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Scores</h2>
+        <div id="scores" class="grid"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Detected Hooks</h2>
+        <div id="hooks"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Funnel Steps</h2>
+        <ul id="funnel"></ul>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Key Observations</h2>
+        <ul id="observations"></ul>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Action Plan</h2>
+        <ul id="actions"></ul>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">SERP Snapshot</h2>
+        <div id="serps"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Screenshots</h2>
+        <div id="screenshots"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Crawl Notes</h2>
+        <ul id="notes"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById("urlInput");
+    const runBtn = document.getElementById("runBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const statusEl = document.getElementById("status");
+    const errorEl = document.getElementById("error");
+    const resultsEl = document.getElementById("results");
+
+    let latestResult = null;
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function safeJsonFetch(url, options) {
+      const response = await fetch(url, options);
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${text}`);
+      }
+
+      if (!text.trim()) {
+        throw new Error("Server returned an empty response instead of JSON.");
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        throw new Error(`Invalid JSON returned by server: ${text}`);
+      }
+    }
+
+    function renderResult(data) {
+      resultsEl.classList.remove("hidden");
+
+      document.getElementById("overview").innerHTML = `
+        <p><strong>Competitor:</strong> ${escapeHtml(data.competitor_name)}</p>
+        <p><strong>Domain:</strong> ${escapeHtml(data.domain || "")}</p>
+        <p><strong>Input URL:</strong> ${escapeHtml(data.input_url || "")}</p>
+        <p><strong>Page Title:</strong> ${escapeHtml(data.page_title || "")}</p>
+        <p><strong>Headline:</strong> ${escapeHtml(data.headline || "")}</p>
+        <p><strong>Summary:</strong> ${escapeHtml(data.summary || "")}</p>
+        <p><strong>Pressure Band:</strong> ${escapeHtml(data.pressure_band || "")}</p>
+      `;
+
+      const scores = [
+        ["Trust", data.trust_score],
+        ["Urgency", data.urgency_score],
+        ["Utility", data.utility_score],
+        ["Value", data.value_score],
+        ["Emotional", data.emotional_score],
+        ["SEO Signal", data.seo_signal_score],
+        ["Keyword Pressure", data.keyword_pressure_score]
+      ];
+
+      document.getElementById("scores").innerHTML = scores.map(([label, value]) => `
+        <div class="metric">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(value ?? "")}</div>
+        </div>
+      `).join("");
+
+      document.getElementById("hooks").innerHTML = (data.detected_hooks || [])
+        .map(h => `<span class="pill">${escapeHtml(h)}</span>`)
+        .join("") || '<span class="muted">No hooks detected.</span>';
+
+      document.getElementById("funnel").innerHTML = (data.detected_funnel_steps || [])
+        .map(item => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+
+      document.getElementById("observations").innerHTML = (data.key_observations || [])
+        .map(item => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+
+      document.getElementById("actions").innerHTML = (data.action_plan || [])
+        .map(item => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+
+      const serps = data.serps || [];
+      document.getElementById("serps").innerHTML = serps.length ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Query</th>
+              <th>Source</th>
+              <th>Ads Count</th>
+              <th>Top Organic Titles</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${serps.map(row => `
+              <tr>
+                <td>${escapeHtml(row.query)}</td>
+                <td>${escapeHtml(row.source)}</td>
+                <td>${escapeHtml(row.ads_count ?? "")}</td>
+                <td>${escapeHtml((row.top_organic_titles || []).join(" | "))}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : '<span class="muted">No SERP data available.</span>';
+
+      const screenshots = data.screenshots || [];
+      document.getElementById("screenshots").innerHTML = screenshots.length
+        ? screenshots.map(s => `
+            <div style="margin-bottom:16px;">
+              <div><strong>${escapeHtml(s.label)}</strong></div>
+              <img class="screenshot" src="${escapeHtml(s.url)}" alt="${escapeHtml(s.label)}" />
+            </div>
+          `).join("")
+        : '<span class="muted">No screenshots available.</span>';
+
+      document.getElementById("notes").innerHTML = (data.crawl_notes || [])
+        .map(item => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+    }
+
+    runBtn.addEventListener("click", async () => {
+      const url = urlInput.value.trim();
+      errorEl.textContent = "";
+      statusEl.textContent = "";
+      resultsEl.classList.add("hidden");
+      exportBtn.disabled = true;
+      latestResult = null;
+
+      if (!url) {
+        errorEl.textContent = "Please enter a competitor URL or domain.";
+        return;
+      }
+
+      runBtn.disabled = true;
+      statusEl.textContent = "Running analysis...";
+
+      try {
+        const data = await safeJsonFetch("/analyze", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ url })
+        });
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        latestResult = data;
+        renderResult(data);
+        exportBtn.disabled = false;
+        statusEl.textContent = "Analysis complete.";
+      } catch (err) {
+        errorEl.textContent = err.message || String(err);
+        statusEl.textContent = "";
+      } finally {
+        runBtn.disabled = false;
+      }
+    });
+
+    exportBtn.addEventListener("click", async () => {
+      if (!latestResult) return;
+
+      const rows = (latestResult.action_plan || []).map(item => ({
+        category: "action_plan",
+        value: item
+      }));
+
+      try {
+        const response = await fetch("/export", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ rows })
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Export failed: ${response.status} ${text}`);
+        }
+
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "truthfinder_action_plan.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(downloadUrl);
+      } catch (err) {
+        errorEl.textContent = err.message || String(err);
+      }
+    });
+  </script>
 </body>
 </html>
