@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TruthFinder Competitor War Room</title>
+</head>
+<body>
+  <h1>TruthFinder Competitor War Room</h1>
+  <input id="urlInput" placeholder="Enter competitor URL" />
+  <button id="runBtn">Run Analysis</button>
+  <pre id="output"></pre>
+<script>
+async function safeJsonFetch(url, options) {
+  const response = await fetch(url, options);
+  const text = await response.text();
+  if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+  return JSON.parse(text);
+}
+document.getElementById("runBtn").addEventListener("click", async () => {
+  const url = document.getElementById("urlInput").value;
+  const data = await safeJsonFetch("/analyze", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({url})
+  });
+  document.getElementById("output").textContent = JSON.stringify(data,null,2);
+});
+</script>
+</body>
+</html>
