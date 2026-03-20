@@ -398,11 +398,6 @@ function classifyBand(score) {
   return "Low-Medium";
 }
 
-function safePreview(text, maxLen = 180) {
-  const t = String(text || "").trim();
-  return t.length > maxLen ? `${t.slice(0, maxLen - 1)}…` : t;
-}
-
 function getFullText(scrape) {
   return [
     scrape.title,
@@ -491,7 +486,6 @@ function buildUnderutilizedKeywords(clusterPresence, brandDomain) {
 
   for (const c of clusterPresence) {
     const underutilized = !c.detected || c.visibility_score < 25 || c.intent_type !== "core";
-
     if (!underutilized) continue;
 
     for (const keyword of c.keywords.slice(0, 4)) {
@@ -705,7 +699,7 @@ function buildActionPlan(keywordClusters, underutilizedKeywords, detectedAngles,
   return uniq(actions).slice(0, 10);
 }
 
-function buildChannelRecommendations(keywordClusters, detectedAngles, underutilizedKeywords) {
+function buildChannelRecommendations(keywordClusters, detectedAngles) {
   const topSearchClusters = keywordClusters.filter((k) => k.recommended_channels.includes("google_ads")).slice(0, 4);
   const topSocialAngles = detectedAngles.filter((a) => a.best_channels.includes("meta_ads") || a.best_channels.includes("tiktok_ads")).slice(0, 4);
   const displayClusters = keywordClusters.filter((k) => k.recommended_channels.includes("display")).slice(0, 4);
@@ -1007,7 +1001,6 @@ async function analyzeCompetitor(inputUrl, env, payload = {}) {
     keyword_pressure_score: ppcScores.keyword_pressure_score,
     pressure_band: ppcScores.pressure_band,
 
-    // compatibility fields for older UI cards
     trust_score: Math.round((ppcScores.paid_intent_coverage_score + ppcScores.offer_cta_strength_score) / 2),
     urgency_score: Math.round((ppcScores.offer_cta_strength_score + ppcScores.funnel_monetization_efficiency_score) / 2),
     utility_score: ppcScores.keyword_opportunity_score,
