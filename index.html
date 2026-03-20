@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TruthFinder Competitor War Room</title>
+  <title>TruthFinder PPC Competitor War Room</title>
   <style>
     :root{
       --bg:#0b0d10;
@@ -31,7 +31,7 @@
     }
 
     .container {
-      max-width: 1380px;
+      max-width: 1450px;
       margin: 0 auto;
     }
 
@@ -80,7 +80,7 @@
     }
 
     textarea {
-      min-height: 90px;
+      min-height: 100px;
       resize: vertical;
     }
 
@@ -118,14 +118,9 @@
 
     .hidden { display: none; }
 
-    .grid {
-      display: grid;
-      gap: 12px;
-    }
-
     .grid-2 {
       display: grid;
-      grid-template-columns: 1.15fr .85fr;
+      grid-template-columns: 1.1fr .9fr;
       gap: 16px;
     }
 
@@ -141,7 +136,7 @@
       gap: 12px;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1100px) {
       .grid-2, .grid-3 {
         grid-template-columns: 1fr;
       }
@@ -304,12 +299,6 @@
       color: #d6dde6;
     }
 
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 14px 0;
-    }
-
     .warning-box {
       background: #2a1f10;
       color: var(--warn);
@@ -320,22 +309,28 @@
       font-size: 14px;
     }
 
-    .success-box {
-      background: #143222;
-      color: var(--green);
-      border: 1px solid #2c5a3f;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 14px;
+    .channel-block {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .channel-name {
+      color: var(--gold-soft);
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-transform: capitalize;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>TruthFinder Competitor War Room</h1>
+    <h1>TruthFinder PPC Competitor War Room</h1>
     <div class="sub">
-      Evidence-first competitive intelligence. Review actual sources, screenshots, score rationale, SERP pressure,
-      ad creative themes, funnel signals, and action plans — not just placeholder summary metrics.
+      PPC-first competitive intelligence focused on keyword opportunities, competitor keyword coverage,
+      creative hooks, use-case expansion, cross-channel recommendations, and practical ways for TruthFinder
+      to outperform competitors across Google Ads, Bing Ads, Meta, TikTok, and display.
     </div>
 
     <div class="card">
@@ -365,18 +360,17 @@
 
       <div class="row" style="margin-top:12px;">
         <div class="grow">
-          <label for="questionInput">What do you want the analysis to focus on?</label>
+          <label for="questionInput">Focus questions for the analysis</label>
           <textarea id="questionInput" placeholder="Examples:
-- Show why urgency scored high
-- Surface actual pricing path
-- Show evidence behind trust score
-- Capture competitor ad angles and likely best creatives
-- Show screenshot evidence for funnel stages"></textarea>
+- Where are the biggest underutilized keyword opportunities?
+- What creative hooks should TruthFinder test next?
+- Which use cases should we own across paid social?
+- How should we segment campaigns by intent cluster?"></textarea>
         </div>
       </div>
 
       <div class="row" style="margin-top:12px;">
-        <button id="runBtn">Run Analysis</button>
+        <button id="runBtn">Run PPC Analysis</button>
         <button id="exportBtn" class="secondary" disabled>Export Action Plan CSV</button>
       </div>
 
@@ -400,7 +394,7 @@
       </div>
 
       <div class="card">
-        <h2 class="section-title">Scorecard With Rationale</h2>
+        <h2 class="section-title">PPC Scorecard With Rationale</h2>
         <div id="scores" class="auto-grid"></div>
       </div>
 
@@ -414,6 +408,28 @@
           <h2 class="section-title">Pressure Summary</h2>
           <div id="pressureSummary"></div>
         </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Keyword Opportunity Map</h2>
+        <div id="keywordClusters"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2 class="section-title">Underutilized Keyword Ideas</h2>
+          <div id="underutilizedKeywords"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="section-title">Creative Angle Library</h2>
+          <div id="creativeAngles"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Channel Recommendations</h2>
+        <div id="channelRecommendations" class="auto-grid"></div>
       </div>
 
       <div class="grid-3">
@@ -494,13 +510,16 @@
 
     function badgeForStatus(status) {
       const s = String(status || "").toLowerCase();
-      if (s.includes("connected") || s.includes("available") || s.includes("live")) {
-        return "green";
-      }
-      if (s.includes("missing") || s.includes("not connected") || s.includes("unavailable")) {
-        return "red";
-      }
+      if (s.includes("connected") || s.includes("available") || s.includes("live")) return "green";
+      if (s.includes("missing") || s.includes("not connected") || s.includes("unavailable")) return "red";
       return "gold";
+    }
+
+    function levelPill(level) {
+      const s = String(level || "").toLowerCase();
+      if (s.includes("high")) return "red";
+      if (s.includes("medium")) return "gold";
+      return "green";
     }
 
     async function safeJsonFetch(url, options) {
@@ -527,6 +546,8 @@
         ["Competitor", data.competitor_name],
         ["Domain", data.domain],
         ["Input URL", data.input_url],
+        ["Market", data.market],
+        ["Device", data.device],
         ["Page Title", data.page_title],
         ["Headline", data.headline],
         ["Pressure Band", data.pressure_band],
@@ -546,21 +567,21 @@
             <div class="source-card">
               <div><strong>${escapeHtml(s.name)}</strong> <span class="pill ${badgeForStatus(s.status)}">${escapeHtml(s.status)}</span></div>
               <div class="small" style="margin-top:8px;">${escapeHtml(s.detail || "")}</div>
-              ${s.last_checked ? `<div class="small" style="margin-top:8px;">Last checked: ${escapeHtml(s.last_checked)}</div>` : ""}
             </div>
           `).join("")
-        : `<div class="small">No data source coverage returned. Backend should report crawl, SERP, ad creative, and screenshot availability.</div>`;
+        : `<div class="small">No data source coverage returned.</div>`;
     }
 
     function renderScores(data) {
       const scoreMap = [
-        ["trust_score", "Trust"],
-        ["urgency_score", "Urgency"],
-        ["utility_score", "Utility"],
-        ["value_score", "Value"],
-        ["emotional_score", "Emotional"],
-        ["seo_signal_score", "SEO Signal"],
-        ["keyword_pressure_score", "Keyword Pressure"]
+        ["keyword_opportunity_score", "Keyword Opportunity"],
+        ["paid_intent_coverage_score", "Paid Intent Coverage"],
+        ["creative_angle_diversity_score", "Creative Angle Diversity"],
+        ["use_case_expansion_score", "Use-Case Expansion"],
+        ["offer_cta_strength_score", "Offer / CTA Strength"],
+        ["funnel_monetization_efficiency_score", "Funnel Monetization Efficiency"],
+        ["channel_expansion_score", "Channel Expansion"],
+        ["keyword_pressure_score", "Composite PPC Pressure"]
       ];
 
       const explanations = data.score_explanations || {};
@@ -585,7 +606,7 @@
               <div class="small" style="margin-top:4px;">${escapeHtml(methodology[key])}</div>
             </div>
           `).join("")
-        : `<div class="small">No scoring methodology returned. Backend should explain how each score is calculated and weighted.</div>`;
+        : `<div class="small">No scoring methodology returned.</div>`;
     }
 
     function renderPressureSummary(data) {
@@ -595,10 +616,113 @@
       document.getElementById("pressureSummary").innerHTML = `
         <div style="margin-bottom:10px;"><strong>Summary</strong></div>
         <div class="small">${escapeHtml(summary)}</div>
-        <div class="divider"></div>
-        <div style="margin-bottom:8px;"><strong>Pressure Drivers</strong></div>
-        <div>${drivers.length ? drivers.map(d => `<span class="pill blue">${escapeHtml(d)}</span>`).join("") : '<span class="small">No pressure drivers returned.</span>'}</div>
+        <div style="margin:14px 0 8px;"><strong>Pressure Drivers</strong></div>
+        <div>
+          ${drivers.length ? drivers.map(d => `<span class="pill blue">${escapeHtml(d)}</span>`).join("") : '<span class="small">No pressure drivers returned.</span>'}
+        </div>
       `;
+    }
+
+    function renderKeywordClusters(data) {
+      const rows = data.keyword_clusters || [];
+      document.getElementById("keywordClusters").innerHTML = rows.length ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Cluster</th>
+              <th>Intent Type</th>
+              <th>Priority</th>
+              <th>Competitor Visibility</th>
+              <th>Opportunity</th>
+              <th>Representative Keywords</th>
+              <th>Use Cases</th>
+              <th>Recommended Channels</th>
+              <th>Why It Matters</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td><strong>${escapeHtml(r.cluster)}</strong></td>
+                <td>${escapeHtml(r.intent_type)}</td>
+                <td>${escapeHtml(r.priority)}</td>
+                <td>${escapeHtml(r.competitor_visibility_score ?? "")}</td>
+                <td>
+                  <span class="pill ${levelPill(r.opportunity_level)}">${escapeHtml(r.opportunity_level)}</span>
+                  <div class="small" style="margin-top:6px;">Score: ${escapeHtml(r.opportunity_score ?? "")}</div>
+                </td>
+                <td>${escapeHtml((r.representative_keywords || []).join(", "))}</td>
+                <td>${escapeHtml((r.use_cases || []).join(", "))}</td>
+                <td>${escapeHtml((r.recommended_channels || []).join(", "))}</td>
+                <td>${escapeHtml(r.why_it_matters || "")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : `<div class="small">No keyword clusters returned.</div>`;
+    }
+
+    function renderUnderutilizedKeywords(data) {
+      const rows = data.underutilized_keywords || [];
+      document.getElementById("underutilizedKeywords").innerHTML = rows.length ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Keyword</th>
+              <th>Cluster</th>
+              <th>Priority</th>
+              <th>Opportunity</th>
+              <th>Recommended Channel</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td><strong>${escapeHtml(r.keyword)}</strong></td>
+                <td>${escapeHtml(r.cluster)}</td>
+                <td>${escapeHtml(r.priority)}</td>
+                <td><span class="pill ${levelPill(r.opportunity_level)}">${escapeHtml(r.opportunity_level)}</span></td>
+                <td>${escapeHtml(r.recommended_channel || "")}</td>
+                <td>${escapeHtml(r.why || "")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : `<div class="small">No underutilized keyword ideas returned.</div>`;
+    }
+
+    function renderCreativeAngles(data) {
+      const rows = data.creative_angles || [];
+      document.getElementById("creativeAngles").innerHTML = rows.length
+        ? rows.map(a => `
+            <div class="metric" style="margin-bottom:12px;">
+              <div class="label">${escapeHtml(a.angle)}</div>
+              <div class="detail"><strong>User problem:</strong> ${escapeHtml(a.user_problem || "")}</div>
+              <div class="detail" style="margin-top:8px;"><strong>Best channels:</strong> ${escapeHtml((a.best_channels || []).join(", "))}</div>
+              <div class="detail" style="margin-top:8px;"><strong>Reason:</strong> ${escapeHtml(a.reason || "")}</div>
+              <div style="margin-top:10px;">
+                ${(a.hook_templates || []).map(h => `<span class="pill gold">${escapeHtml(h)}</span>`).join("")}
+              </div>
+            </div>
+          `).join("")
+        : `<div class="small">No creative angles returned.</div>`;
+    }
+
+    function renderChannelRecommendations(data) {
+      const channels = data.channel_recommendations || {};
+      const entries = Object.entries(channels);
+
+      document.getElementById("channelRecommendations").innerHTML = entries.length
+        ? entries.map(([channel, recs]) => `
+            <div class="channel-block">
+              <div class="channel-name">${escapeHtml(channel.replaceAll("_", " "))}</div>
+              <ul>
+                ${(recs || []).map(r => `<li>${escapeHtml(r)}</li>`).join("")}
+              </ul>
+            </div>
+          `).join("")
+        : `<div class="small">No channel recommendations returned.</div>`;
     }
 
     function renderHooks(data) {
@@ -618,12 +742,12 @@
       const evidence = data.evidence_extracts || [];
       document.getElementById("evidence").textContent = evidence.length
         ? evidence.join("\n\n---\n\n")
-        : "No evidence extracts returned. Backend should include quoted headline text, CTA text, pricing text, trust cues, and other supporting snippets.";
+        : "No evidence extracts returned.";
     }
 
     function renderCreatives(data) {
       const creatives = data.ad_creatives || [];
-      const summary = data.creative_summary || "No creative summary returned. Backend should provide actual ad themes, copy patterns, screenshots, and notes.";
+      const summary = data.creative_summary || "No creative summary returned.";
 
       document.getElementById("creativeSummary").textContent = summary;
 
@@ -651,7 +775,7 @@
               ${s.url ? `<img src="${escapeHtml(s.url)}" alt="${escapeHtml(s.label || "Screenshot")}" />` : ""}
               <div class="media-body">
                 <div class="media-title">${escapeHtml(s.label || "Screenshot")}</div>
-                ${s.stage ? `<div class="small"><strong>Funnel Stage:</strong> ${escapeHtml(s.stage)}</div>` : ""}
+                ${s.stage ? `<div class="small"><strong>Stage:</strong> ${escapeHtml(s.stage)}</div>` : ""}
                 ${s.notes ? `<div class="small" style="margin-top:8px;">${escapeHtml(s.notes)}</div>` : ""}
               </div>
             </div>
@@ -699,21 +823,13 @@
     function showMissingDataWarnings(data) {
       const warnings = [];
 
-      if (!data.screenshots || !data.screenshots.length) {
-        warnings.push("No screenshots returned.");
-      }
-      if (!data.ad_creatives || !data.ad_creatives.length) {
-        warnings.push("No competitor ad creatives returned.");
-      }
-      if (!data.score_explanations || !Object.keys(data.score_explanations).length) {
-        warnings.push("No score rationale returned.");
-      }
-      if (!data.scoring_methodology || !Object.keys(data.scoring_methodology).length) {
-        warnings.push("No scoring methodology returned.");
-      }
-      if (!data.data_sources || !data.data_sources.length) {
-        warnings.push("No data source coverage returned.");
-      }
+      if (!data.screenshots || !data.screenshots.length) warnings.push("No screenshots returned.");
+      if (!data.ad_creatives || !data.ad_creatives.length) warnings.push("No competitor ad creatives returned.");
+      if (!data.score_explanations || !Object.keys(data.score_explanations).length) warnings.push("No score rationale returned.");
+      if (!data.keyword_clusters || !data.keyword_clusters.length) warnings.push("No keyword clusters returned.");
+      if (!data.underutilized_keywords || !data.underutilized_keywords.length) warnings.push("No underutilized keyword ideas returned.");
+      if (!data.creative_angles || !data.creative_angles.length) warnings.push("No creative angle analysis returned.");
+      if (!data.channel_recommendations || !Object.keys(data.channel_recommendations).length) warnings.push("No channel recommendations returned.");
 
       if (warnings.length) {
         missingDataWarningEl.classList.remove("hidden");
@@ -731,6 +847,10 @@
       renderScores(data);
       renderMethodology(data);
       renderPressureSummary(data);
+      renderKeywordClusters(data);
+      renderUnderutilizedKeywords(data);
+      renderCreativeAngles(data);
+      renderChannelRecommendations(data);
       renderHooks(data);
       renderList("funnel", data.detected_funnel_steps || [], "No funnel steps returned.");
       renderList("actions", data.action_plan || [], "No actions returned.");
@@ -758,7 +878,7 @@
       }
 
       runBtn.disabled = true;
-      statusEl.textContent = "Running analysis...";
+      statusEl.textContent = "Running PPC analysis...";
 
       try {
         const payload = {
@@ -797,7 +917,9 @@
         ...(latestResult.action_plan || []).map(v => ({ category: "action_plan", value: v })),
         ...(latestResult.key_observations || []).map(v => ({ category: "key_observation", value: v })),
         ...(latestResult.pressure_drivers || []).map(v => ({ category: "pressure_driver", value: v })),
-        ...(latestResult.detected_hooks || []).map(v => ({ category: "detected_hook", value: v }))
+        ...(latestResult.detected_hooks || []).map(v => ({ category: "detected_hook", value: v })),
+        ...(latestResult.underutilized_keywords || []).map(v => ({ category: "underutilized_keyword", value: v.keyword })),
+        ...((latestResult.keyword_clusters || []).slice(0, 10).map(v => ({ category: "keyword_cluster", value: v.cluster })))
       ];
 
       try {
@@ -816,7 +938,7 @@
         const downloadUrl = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = "truthfinder_action_plan.csv";
+        a.download = "truthfinder_ppc_action_plan.csv";
         document.body.appendChild(a);
         a.click();
         a.remove();
