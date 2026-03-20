@@ -5,6 +5,14 @@ const USER_AGENT =
 
 const DEFAULT_TIMEOUT_MS = 18000;
 
+const COMMON_QUERY_SETS = [
+  "people search",
+  "background check",
+  "reverse phone lookup",
+  "address lookup",
+  "email lookup"
+];
+
 const PPC_SCORE_WEIGHTS = {
   keyword_opportunity_score: 0.25,
   paid_intent_coverage_score: 0.20,
